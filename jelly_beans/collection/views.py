@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 import json
 from django.template.loader import render_to_string
 from .models import Jar, Flavor, Bean
@@ -7,16 +7,54 @@ from .forms import JarForm, FlavorForm, BeanForm
 
 # Create your views here.
 def collection(request):
+    # ----------------------------------------
+    # Query and format the data
+    # ----------------------------------------
+
     jars = Jar.objects.prefetch_related('bean_set__flavor')
     flavors = Flavor.objects.all()
 
+    # Create a list of jar data from the result set. Each item will be in the following format:
+    """
+    'jar': {
+       'id': jar.id,
+       'name': jar.name, 
+       'bean_capacity': jar.bean_capacity, 
+       'beans': {
+            'id': bean.id,
+            'size': bean.size,
+            'flavor': {
+                'id': flavor.id,
+                'name': flavor.name,
+                'color': flavor.color            
+            }    
+        } 
+    }
+    """
     jars_data = []
     for jar in jars:
         jars_data.append(setJarDictFields(jar))
 
+    # Create a list of flavor data from the flavor result set. Each item will be in the following format:
+    """
+    'flavor': {
+        'id': flavor.id,
+        'name': flavor.name,
+        'color': flavor.color            
+    }      
+    """
     flavors_data = []
     for flavor in flavors:
         flavors_data.append(setFlavorDictFields(flavor))
+     
+
+    # --------------------------------------------------------------------------------
+    # Render html forms to strings and create modal settings for modal snippets:
+    # Each of the objects (jar, bean, and flavor) will have an empty form initialized
+    # and rendered to an html string which will then be passed to the modal settings.
+    # An additional modal settings will be created for the edit form of each object.
+    # The edit modals will be populated with form html returned from an AJAX request.
+    # --------------------------------------------------------------------------------
 
     jar_form_create = JarForm(prefix='create')
     jar_form_create_html = render_to_string('snippets/jar_form.html', {'jar_form': jar_form_create}, request=request)
@@ -25,7 +63,6 @@ def collection(request):
         'title': 'Create a Jar',
         'body': jar_form_create_html
     }
-    # Create the settings for the edit modal. This one will be populated by an ajax request to /jar-edit/
     jar_form_edit_modal_settings = {
         'id': 'jar_modal_edit',
         'title': 'Edit Jar',
@@ -52,18 +89,19 @@ def collection(request):
         'title': 'Create a New Flavor',
         'body': flavor_form_create_html
     } 
-    # Create the settings for the edit modal. This one will be populated by an ajax request to /jar-edit/
     flavor_form_edit_modal_settings = {
         'id': 'flavor_modal_edit',
         'title': 'Edit Flavor',
         'body': '<div id="insert-flavor-edit-form-here"></div>'        
     }  
 
+    # The notification modal will be for "Confirm Delete" type messages.
     notification_modal_settings = {
         'id': 'notification_modal',
         'title': 'Notification',
         'body': '<div id="insert-message-here"></div>'        
-    }                    
+    }  
+
 
     context = { 
         'jars_data': jars_data,
@@ -79,6 +117,9 @@ def collection(request):
     
     return render(request, 'collection.html', context)
 
+# -------------------------------------------------------------
+# Jar Create, Edit, and Delete routes
+# -------------------------------------------------------------
 def jarCreate(request):
     if request.method == 'POST':
         jar_form = JarForm(request.POST, prefix='create')
@@ -135,6 +176,9 @@ def jarEdit(request, jar_id):
 def jarDelete(request):
     return deleteLogic(request, Jar, 'Jar')
 
+# -------------------------------------------------------------
+# Flavor Create, Edit, and Delete routes
+# -------------------------------------------------------------
 def flavorCreate(request):
     if request.method == 'POST':
         flavor_form = FlavorForm(request.POST, prefix="create")
@@ -193,6 +237,9 @@ def flavorEdit(request, flavor_id):
 def flavorDelete(request):
     return deleteLogic(request, Flavor, 'Flavor')
 
+# -------------------------------------------------------------
+# Bean Create, Edit, and Delete routes
+# -------------------------------------------------------------
 def beanCreate(request):
     if request.method == 'POST':
         bean_form = BeanForm(request.POST, prefix="create")
@@ -249,6 +296,8 @@ def beanEdit(request, bean_id):
 def beanDelete(request):
     return deleteLogic(request, Bean, 'Bean')
 
+
+
 # All the delete routes use the same logic for different objects, so we'll just reuse this function.
 def deleteLogic(request, DeleteObject, object_name):
     if request.method == 'POST':
@@ -270,7 +319,12 @@ def deleteLogic(request, DeleteObject, object_name):
     # Handle invalid requests
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
+
 # The following functions are repeated accross the create and edit functions.
+# setObjectFields will set the fields for the object class which will then be committed to the database.
+# setJarDictFields will create a dictionary object which will be returned to the AJAX request. 
+# This will help keep the front end data up to date.
 def setJarObjectFields(jar, cleaned_data):
     jar.name = cleaned_data['name']
     jar.bean_capacity = cleaned_data['bean_capacity']

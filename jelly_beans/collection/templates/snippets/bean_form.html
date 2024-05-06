@@ -5,7 +5,7 @@
         <input type="submit" value="Submit">
     </form> 
     {% if bean_form.prefix == 'edit' %}
-    <button type="button" onclick="deleteBean()">Eat Bean</button>
+    <button type="button" onclick="deleteBean()" style="margin-top: 15px; background-color: var(--secondary-color);">Eat Bean</button>
     {% endif %}
 </div>
 
@@ -24,7 +24,7 @@
         // Make sure that the jar has enough room for the new bean
         let enoughRoom = jarHasEnoughRoom('create')
         if (!enoughRoom[0]) {
-            addBeanSizeErrorToForm('create', enoughRoom[1])
+            addBeanSizeErrorToForm(enoughRoom[1])
             return
         }
         
@@ -59,7 +59,7 @@
         // Make sure that the jar has enough room for the new bean
         let enoughRoom = jarHasEnoughRoom('edit')
         if (!enoughRoom[0]) {
-            addBeanSizeErrorToForm('edit', enoughRoom[1])
+            addBeanSizeErrorToForm(enoughRoom[1])
             return
         }            
         $.ajax({

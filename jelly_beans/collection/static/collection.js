@@ -1,28 +1,38 @@
+// The delete functions need a csrf_token in the request header, so we'll just retrieve one from
+// the first form of our document.
 const csrf_token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
+// Initialize the current_jar_index to null unless there is jar data. In that case, set it to 0.
+// The current_jar_index will be used to determine which jar we are working with when we add beans to a jar.
+// This value is set when the "Previous" and "Next" buttons are pressed.
 let current_jar_index = null
 if (jars_data.length > 0) {
     current_jar_index = 0
 }
 
+// We keep track of the current_flavor_id so we can know which flavor needs eddited within flavors_data after an edit.
 // This variable is set whenever the edit button of a flavor is clicked
 let current_flavor_id = null
 
+// We keep track of the current_bean_id so we can know which bean needs eddited within the beans data of a jar after an edit.
 // This variable is set whenever the edit button of a bean is clicked
 let current_bean_id = null
 
 $(document).ready(function() {
-    // If jars_data exists, then populate the jars container with the first jar
+    // When the document is ready, we want to populate the jars div with the first jar, or the getting started instructions.
     if (current_jar_index != null) {
         moveJarToContainer(jars_data[current_jar_index])
     } else {
         getStarted()
     }
 
+    // When the document is ready, populate the flavors accordion with the flavor elements
     $.each(flavors_data, function(index, value) {
         $("#flavors_accordion_content").append(createFlavorElement(value))
     })
 })
+
+// The get started function populates the jar div with instructions on how to begin. This function is only called when no jars exist.
 function getStarted() {
     // Hide the jar buttons div
     $(".jar-buttons").hide()
@@ -31,9 +41,13 @@ function getStarted() {
         <button type="button" onclick="showJarCreate()">Click here to get Started!</button></div>
     `)
 }
+
 function showJarCreate() {
     $("#jar_modal_create").show();
 }
+
+// This function uses the jar information to create the jar element which contains:
+// jar name, bean capacity, and the beans contained in that jar
 function moveJarToContainer(jar) {
     jarBeansHtml = ''
     if (!jar) {
@@ -43,11 +57,6 @@ function moveJarToContainer(jar) {
     $(".jar-buttons").show()
 
     $.each(jar.beans, function(index, value) {
-        // lighten the bean color by 50%
-        let lighterColor = shadeColor(value.flavor.color, 80)  
-        
-        // determine the bean width and height based on the bean size value
-        let beanWidthHeight = 100 * value.size
         let svgImg = createBeanElement(value)
         jarBeansHtml += svgImg
     })
@@ -66,10 +75,11 @@ function moveJarToContainer(jar) {
     $("#jar-container").html(jarContainerHtml)
 }
 function createBeanElement(bean) {
-    // lighten the bean color by 50%
+    // lighten the bean color by 50%. This variable will be used for the shiny part of the bean
     let lighterColor = shadeColor(bean.flavor.color, 80)  
     // determine the bean width and height based on the bean size value
-    let beanWidthHeight = 80 * (bean.size * 0.7)   
+    let beanWidthHeight = 80 * (bean.size * 0.7) 
+    // creat the bean svg element  
     return `
         <svg class="jelly-bean" id="bean-${bean.id}" onclick="editBean(${bean.id})" height="${beanWidthHeight}px" width="${beanWidthHeight}px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
         viewBox="0 0 512 512" xml:space="preserve">
@@ -87,6 +97,7 @@ function createBeanElement(bean) {
         </svg>        
     `    
 }
+// Each flavor element contains the flavor name, color, and buttons for editing and deleting.
 function createFlavorElement(flavor) {
     let $flavorElement = $(`
         <div id="flavor-${flavor.id}" class="flavor-row">
@@ -101,6 +112,9 @@ function createFlavorElement(flavor) {
     return $flavorElement
 }
 
+// These two functions will cycle the user through the jars. 
+// If the next jar is out of index range, then show the first jar.
+// If the previous jar is out of index range, then show the last jar.
 function showPreviousJar() {
     current_jar_index -= 1
     if (current_jar_index >= 0) {
@@ -122,6 +136,12 @@ function showNextJar() {
     }
 }
 
+// Start of ajax requests:
+// NOTE: The submit functions for each of the forms are contained in their respective snippets (templates/snippets)
+
+// -------------------------
+// Jar ajax requests:
+// -------------------------
 function editJar() {
     $.ajax({
         type: 'GET',
@@ -137,7 +157,6 @@ function editJar() {
     });
 
 }
-
 function deleteJar(confirmDelete=false) {
     if (!confirmDelete) {
         $("#notification_modal-title").text('Confirm Delete')
@@ -166,12 +185,13 @@ function deleteJar(confirmDelete=false) {
             // check if there are any jars left
             if (jars_data.length == 0) {
                 getStarted()
+            } else{
+                // check if the current_jar_index is less than zero
+                if (current_jar_index < 0) {
+                    current_jar_index = jars_data.length
+                }
+                showNextJar()
             }
-            // check if the current_jar_index is less than zero
-            if (current_jar_index < 0) {
-                current_jar_index = jars_data.length
-            }
-            showNextJar()
             $("#notification_modal").hide()
         },
         error: function(xhr, status, error) {
@@ -180,29 +200,9 @@ function deleteJar(confirmDelete=false) {
     });
 }
 
-function openJellyBeanCreate() {
-    if (flavors_data.length == 0) {
-        $("#notification_modal-title").text('Create a Flavor First!')
-        $("#insert-message-here").html(`
-            <p>You haven't created any flavors yet! Please see the "Manage Flavors" accordion to create your flavors, 
-            then you can add some jelly beans to the jar.</p>
-        `)
-        $("#notification_modal").show()
-        return
-    }
-    $("#bean_modal_create").show()
-}
-
-function findFlavorIndexById(flavor_id) {
-    let current_flavor_index = null
-    $.each(flavors_data, function(index, value) {
-        if (value.id == flavor_id) {
-            current_flavor_index = index
-        }
-    })
-    return current_flavor_index
-}
-
+// -------------------------
+// Flavor ajax requests:
+// -------------------------
 function editFlavor(flavor_id) {
     current_flavor_id = flavor_id
     $.ajax({
@@ -276,8 +276,10 @@ function deleteFlavor(flavor_id, confirmDelete=false) {
                 const [jarIndex, beanIndex] = bean_indexes_to_remove_from_array[i];
                 jars_data[jarIndex].beans.splice(beanIndex, 1);
             }
-            // Update the bean count in the jar header
-            updateJarBeanCount()
+            // Update the bean count in the jar header, but only if a jar exists
+            if (jars_data.legnth > 0) {
+                updateJarBeanCount()
+            }
             $("#notification_modal").hide()
         },
         error: function(xhr, status, error) {
@@ -286,16 +288,9 @@ function deleteFlavor(flavor_id, confirmDelete=false) {
     });
 }
 
-function findBeanIndexById(bean_id) {
-    let current_bean_index = null
-    $.each(jars_data[current_jar_index].beans, function(index, value) {
-        if (value.id == bean_id) {
-            current_bean_index = index
-        }
-    })
-    return current_bean_index
-}
-
+// -------------------------
+// Bean ajax requests:
+// -------------------------
 function editBean(bean_id) {
     current_bean_id = bean_id
     $.ajax({
@@ -346,6 +341,10 @@ function deleteBean(confirmDelete=false) {
         }
     });
 }
+
+// End of ajax requests:
+
+// Function to loop through and total the sizes of beans in the jar
 function getNumOfBeansInJar(jar) {
     let numBeans = 0
     $.each(jar.beans, function(index, value) {
@@ -356,6 +355,7 @@ function getNumOfBeansInJar(jar) {
 function updateJarBeanCount() {
     $("#numBeans").text(getNumOfBeansInJar(jars_data[current_jar_index]))
 }
+// When editing a jar, we need to validate that the new jar size will accomodate the existing beans
 function jarHasEnoughRoom(createOrEdit) {
     let new_bean_size = parseInt($(`#id_${createOrEdit}-size`).val())
     let bean_capacity = jars_data[current_jar_index].bean_capacity
@@ -368,12 +368,44 @@ function jarHasEnoughRoom(createOrEdit) {
         return [true, roomLeftString]
     }
 }
-function addBeanSizeErrorToForm(createOrEdit, roomLeftString) {
-    alert(roomLeftString)
-    // $("#id_" + createOrEdit + "-size").after($("<p>" + roomLeftString + "</p>"));   
+function addBeanSizeErrorToForm(roomLeftString) {
+    alert(roomLeftString) 
+}
+// Before adding a jelly bean to the jar, we need to make sure that some flavors exist first.
+function openJellyBeanCreate() {
+    if (flavors_data.length == 0) {
+        $("#notification_modal-title").text('Create a Flavor First!')
+        $("#insert-message-here").html(`
+            <p>You haven't created any flavors yet! Please see the "Manage Flavors" accordion to create your flavors, 
+            then you can add some jelly beans to the jar.</p>
+        `)
+        $("#notification_modal").show()
+        return
+    }
+    $("#bean_modal_create").show()
 }
 
+function findFlavorIndexById(flavor_id) {
+    let current_flavor_index = null
+    $.each(flavors_data, function(index, value) {
+        if (value.id == flavor_id) {
+            current_flavor_index = index
+        }
+    })
+    return current_flavor_index
+}
 
+function findBeanIndexById(bean_id) {
+    let current_bean_index = null
+    $.each(jars_data[current_jar_index].beans, function(index, value) {
+        if (value.id == bean_id) {
+            current_bean_index = index
+        }
+    })
+    return current_bean_index
+}
+
+// This function is used to create a slightly lighter color for the part of the jelly bean that is shiny.
 function shadeColor(color, percent) {
 
     var R = parseInt(color.substring(1,3),16);

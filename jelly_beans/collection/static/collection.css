@@ -1,4 +1,7 @@
-@import url(https://db.onlinewebfonts.com/c/33391de900c32dc938fc6b7725d4335d?family=laCartoonerie);
+@font-face {
+    font-family: 'laCartoonerie';
+    src: url('/static/fonts/La Cartoonerie/laCartoonerie.ttf') format('truetype');
+}
 
 :root {
     --dark: #36393B;
@@ -165,18 +168,6 @@ input[type="submit"]:hover {
     overflow-x: auto;
     overflow-y: hidden;
 }
-/* .jar-body ::-webkit-scrollbar {
-    width: 20px;
-    height: 25px;
-  }
-.jar-body ::-webkit-scrollbar-track {
-    background-color: rgb(196, 196, 196);
-}
-.jar-body ::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 10px;
-    border: solid 4px var(--dark);
-} */
 .jar-body-scroller-content {
     display: flex;
     align-items: center;

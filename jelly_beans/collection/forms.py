@@ -25,7 +25,8 @@ class BeanForm(forms.ModelForm):
         self.fields['size'].initial = 1   
         self.fields['size'].label = 'Bean Size (1-5)'
         self.fields['size'].validators.append(MaxValueValidator(5)) # Set the max bean size        
-        # Set the widget of the 'jar' field to HiddenInput
+        # Set the widget of the 'jar' field to HiddenInput. 
+        # This field will be set to whatever jar is currently in view on the collection page.
         self.fields['jar'].widget = forms.HiddenInput() 
 
 class FlavorForm(forms.ModelForm):
