@@ -1,7 +1,9 @@
 <div>
     <form id="flavor_form_{{ flavor_form.prefix }}" action="/flavor-create/" method="POST">
         {% csrf_token %}
+        <label for="name_{{ flavor_form.prefix }}-color">Flavor Name:</label>
         {{ flavor_form.name }}
+        <label for="id_{{ flavor_form.prefix }}-color">Color:</label>
         <input type="text" name="{{ flavor_form.prefix }}-color" maxlength="7" required="" id="id_{{ flavor_form.prefix }}-color" class="flavor-color-input" value="{{ flavor_form.color.value }}" data-jscolor="{}">        
         <input type="submit" value="Submit">
     </form>        
