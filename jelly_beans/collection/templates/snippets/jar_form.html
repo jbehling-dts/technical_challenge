@@ -1,0 +1,78 @@
+<div>
+    <form id="jar_form_{{ jar_form.prefix }}" action="/jar-create/" method="post">
+        {% csrf_token %}
+        {{ jar_form }}
+        <input type="submit" value="Submit">
+    </form>        
+</div>
+
+{% if jar_form.prefix == 'create' %}
+<script>
+    $(document).ready(function() {
+        $('#jar_form_create').submit(function(event) {
+            event.preventDefault();
+            // validate the form
+            let capacity = parseInt($("#id_{{ jar_form.prefix }}-bean_capacity").val())
+            if (capacity < 1 || capacity > 50) {
+                alert('Please enter a jar capacity value between 1 and 50.')
+                return
+            }            
+
+            var formData = $(this).serialize();
+            
+            $.ajax({
+                type: 'POST',
+                url: '/jar-create/',
+                data: formData,
+                success: function(response) {
+                    jars_data.push(response)
+                    current_jar_index = jars_data.length - 1
+                    moveJarToContainer(jars_data[current_jar_index])
+                    $("#jar_modal_create").hide()
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error submitting form:', error);
+                }
+            });
+        });
+    });
+</script>
+{% endif %}
+
+{% if jar_form.prefix == 'edit' %}
+<script>
+    $(document).ready(function() {
+        $('#jar_form_edit').submit(function(event) {
+            event.preventDefault();
+            // validate the form
+            let capacity = parseInt($("#id_{{ jar_form.prefix }}-bean_capacity").val())
+            if (capacity < 1 || capacity > 50) {
+                alert('Please enter a jar capacity value between 1 and 50.')
+                return
+            }  
+
+            let numBeansInJar = getNumOfBeansInJar(jars_data[current_jar_index])
+            if (numBeansInJar > capacity) {
+                alert(`Cannot reduce bean capacity of jar to ${capacity} because there are ${numBeansInJar} jelly bean(s) in the jar currently.`)
+                return
+            }
+
+            var formData = $(this).serialize();
+            
+            $.ajax({
+                type: 'POST',
+                url: `/jar-edit/${jars_data[current_jar_index].id}/`,
+                data: formData,
+                success: function(response) {
+                    jars_data[current_jar_index] = response
+                    moveJarToContainer(response)
+                    $("#jar_modal_edit").hide()
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error submitting form:', error);
+                }
+            });
+        });
+    });
+</script>
+{% endif %}

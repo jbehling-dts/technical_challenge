@@ -1,0 +1,83 @@
+<div>
+    <form id="bean_form_{{ bean_form.prefix }}" action="/bean-create/" method="POST">
+        {% csrf_token %}
+        {{ bean_form }}
+        <input type="submit" value="Submit">
+    </form> 
+    {% if bean_form.prefix == 'edit' %}
+    <button type="button" onclick="deleteBean()">Eat Bean</button>
+    {% endif %}
+</div>
+
+{% if bean_form.prefix == 'create' %}
+<script>
+    $('#bean_form_create').submit(function(event) {
+        event.preventDefault()
+        let beanSize = parseInt($("#id_{{ bean_form.prefix }}-size").val())
+        if (beanSize < 1 || beanSize > 5) {
+            alert('Please enter a bean size value between 1 and 5.')
+            return
+        }
+        // Set the jar id field to whatever jar is currently in view
+        $("#id_{{ bean_form.prefix }}-jar").val(jars_data[current_jar_index].id)        
+        var formData = $(this).serialize()
+        // Make sure that the jar has enough room for the new bean
+        let enoughRoom = jarHasEnoughRoom('create')
+        if (!enoughRoom[0]) {
+            addBeanSizeErrorToForm('create', enoughRoom[1])
+            return
+        }
+        
+        $.ajax({
+            type: 'POST',
+            url: '/bean-create/',
+            data: formData,
+            success: function(response) {
+                // console.log(response);
+                jars_data[current_jar_index].beans.push(response)
+                moveJarToContainer(jars_data[current_jar_index])
+                $("#bean_modal_create").hide()
+            },
+            error: function(xhr, status, error) {
+                console.error('Error submitting form:', error);
+            }
+        });
+    });
+</script>
+{% endif %}
+
+{% if bean_form.prefix == 'edit' %}
+<script>
+    $('#bean_form_edit').submit(function(event) {
+        event.preventDefault();
+        let beanSize = parseInt($("#id_{{ bean_form.prefix }}-size").val())
+        if (beanSize < 1 || beanSize > 5) {
+            alert('Please enter a bean size value between 1 and 5.')
+            return
+        }        
+        var formData = $(this).serialize();
+        // Make sure that the jar has enough room for the new bean
+        let enoughRoom = jarHasEnoughRoom('edit')
+        if (!enoughRoom[0]) {
+            addBeanSizeErrorToForm('edit', enoughRoom[1])
+            return
+        }            
+        $.ajax({
+            type: 'POST',
+            url: `/bean-edit/${current_bean_id}/`,
+            data: formData,
+            success: function(response) {
+                // find the item with the specified id in the flavors_data array
+                let current_bean_index = findBeanIndexById(current_bean_id)
+                jars_data[current_jar_index].beans[current_bean_index] = response
+                $currentBeanPng = $(`#bean-${current_bean_id}`)
+                $currentBeanPng.replaceWith(createBeanElement(response))
+                $("#bean_modal_edit").hide()                       
+            },
+            error: function(xhr, status, error) {
+                console.error('Error submitting form:', error);
+            }
+        });
+    });
+</script>
+{% endif %}

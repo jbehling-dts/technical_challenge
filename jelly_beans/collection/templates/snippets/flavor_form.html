@@ -1,0 +1,69 @@
+<div>
+    <form id="flavor_form_{{ flavor_form.prefix }}" action="/flavor-create/" method="POST">
+        {% csrf_token %}
+        {{ flavor_form.name }}
+        <input type="text" name="{{ flavor_form.prefix }}-color" maxlength="7" required="" id="id_{{ flavor_form.prefix }}-color" class="flavor-color-input" value="{{ flavor_form.color.value }}" data-jscolor="{}">        
+        <input type="submit" value="Submit">
+    </form>        
+</div>
+
+{% if flavor_form.prefix == 'create' %}
+<script>
+    $(document).ready(function() {
+        $('#flavor_form_create').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            
+            $.ajax({
+                type: 'POST',
+                url: '/flavor-create/',
+                data: formData,
+                success: function(response) {
+                    // Add the flavor response data to the flavors_data variable
+                    flavors_data.push(response)
+                    // Add the option to the new jelly bean form
+                    let newFlavorOption = $(`<option value="${response.id}">${response.name}</option>`)
+                    $("#id_create-flavor").append(newFlavorOption)
+
+                    // Append the new flavor to the flavor div
+                    $("#flavors_accordion_content").append(createFlavorElement(response))
+
+                    $("#flavor_modal_create").hide()
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error submitting form:', error);
+                }
+            });
+        });
+    });
+</script>
+{% endif %}
+
+{% if flavor_form.prefix == 'edit' %}
+<script>
+    $(document).ready(function() {
+        $('#flavor_form_edit').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            
+            $.ajax({
+                type: 'POST',
+                url: `/flavor-edit/${current_flavor_id}/`,
+                data: formData,
+                success: function(response) {
+                    // find the item with the specified id in the flavors_data array
+                    let current_flavor_index = findFlavorIndexById(current_flavor_id)
+                    flavors_data[current_flavor_index] = response
+                    $currentFlavorDiv = $(`#flavor-${current_flavor_id}`)
+                    $currentFlavorDiv.replaceWith(createFlavorElement(flavors_data[current_flavor_index]))
+                    $("#flavor_modal_edit").hide()                       
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error submitting form:', error);
+                }
+            });
+        });
+    });
+</script>
+{% endif %}
+

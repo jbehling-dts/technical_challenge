@@ -1,0 +1,40 @@
+<div id="{{ settings.id }}" class="container" style="display: none;">
+  <div class="simple-modal" tabindex="0">
+    <div class="simple-modal__content">
+      <header>
+        <h2 id="{{ settings.id }}-title">{{ settings.title }}</h2>
+        <span class="close {{ settings.id }}-close">&times;</span>
+      </header>
+      <div class="modal-main">{{ settings.body|safe }}</div>
+      {% if settings.footer %}
+      <footer>{{ settings.footer }}</footer>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Set the onclick function for any button with the class {{id}}-open
+    var openButtons = document.querySelectorAll(".{{ settings.id }}-open");
+    openButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var element = document.getElementById("{{ settings.id }}");
+        if (element) {
+          element.style.display = "block";
+        }
+      });
+    });
+
+    // Set the onclick function for any button with the class {{id}}-close
+    var closeButtons = document.querySelectorAll(".{{ settings.id }}-close");
+    closeButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var element = document.getElementById("{{ settings.id }}");
+        if (element) {
+          element.style.display = "none";
+        }
+      });
+    });
+  });
+</script>

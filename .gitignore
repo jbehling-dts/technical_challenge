@@ -1,0 +1,15 @@
+# Ignore venv folder
+venv/
+
+# Ignore .vscode folder
+.vscode/
+
+# Python bytecode
+*.pyc
+
+# Django-related files
+*.sqlite3
+*.pyc
+*.pyo
+__pycache__/
+*.log

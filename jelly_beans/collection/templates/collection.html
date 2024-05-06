@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jelly Bean Collection</title>
+    <link rel="stylesheet" href="{% static 'modal.css' %}">
+    <link rel="stylesheet" href="{% static 'collection.css' %}">
+    <script src="{% static 'jscolor.js' %}"></script>
+    <script src="{% static 'jquery.min.js' %}"></script>
+    {{ jars_data|json_script:"jars_data_script" }}
+    {{ flavors_data|json_script:"flavors_data_script" }}
+    <script>
+        let jars_data = JSON.parse(document.getElementById('jars_data_script').textContent)
+        let flavors_data = JSON.parse(document.getElementById('flavors_data_script').textContent)
+    </script>
+</head>
+<body>
+    <div style="display: flex; height: 40px;">
+        <div class="vertical-divider-primary"></div>
+        <h3 class="header-text">Technical Challenge for BYU Developer Job by John Behling</h3>
+        <div class="vertical-divider-secondary"></div>
+    </div>
+    <div class="home-banner" style="background-image: url('{% static 'jelly_beans_banner.jpg' %}');">
+        <div class="banner-inner"><div class="banner-inner-content">
+            <div class="divider-secondary"></div> 
+            <h1 class="title">Jelly Bean Collection</h1>
+            <div class="divider-primary"></div>
+        </div></div>
+    </div>
+    <div class="flex-centered jar-buttons" style="gap: 5px; flex-wrap: wrap; margin-bottom: 20px; background-color: var(--dark-lighter); padding: 30px;">
+        <button type="button" class="jar_modal_create-open">Create Jar</button>
+        <button type="button" onclick="editJar()">Edit Jar</button>
+        <button type="button" onclick="deleteJar()">Delete Jar</button>
+        <button type="button" onclick="openJellyBeanCreate()">Add Jelly Bean to Jar</button>
+    </div>
+
+    <div class="jar-outer">
+        <button class="jar-buttons" type="button" onclick="showPreviousJar()">Previous</button>
+        <div id="jar-container">
+            {% comment %} Populated by JS in collection.js {% endcomment %}
+        </div>
+        <button class="jar-buttons" type="button" onclick="showNextJar()">Next</button>
+    </div>
+
+    <div class="divider-secondary" style="margin-top: 50px;"></div>
+    <div class="divider-primary"></div>
+
+    <div class="flex-centered" style="flex-direction: column;">
+        <div id="flavors_accordion_header">
+            <h2>Manage Flavors</h2>
+        </div>
+        <div id="flavors_accordion_content">
+            <button type="button" class="flavor_modal_create-open" style="margin: auto;">Create Flavor</button>
+            {% comment %} Populated by JS in collection.js {% endcomment %}
+        </div>
+    </div>
+
+    {% include 'snippets/modal.html' with settings=jar_form_create_modal_settings %}
+    {% include 'snippets/modal.html' with settings=jar_form_edit_modal_settings %}
+
+    {% include 'snippets/modal.html' with settings=bean_form_create_modal_settings %}
+    {% include 'snippets/modal.html' with settings=bean_form_edit_modal_settings %}
+
+    {% include 'snippets/modal.html' with settings=flavor_form_create_modal_settings %}
+    {% include 'snippets/modal.html' with settings=flavor_form_edit_modal_settings %}
+
+    {% include 'snippets/modal.html' with settings=notification_modal_settings %}
+    
+    <script src="{% static 'collection.js' %}"></script>
+</body>
+</html>

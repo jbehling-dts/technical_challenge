@@ -1,0 +1,84 @@
+/* ************************************************ */
+/* Popup Modal */
+/* ************************************************ */
+.simple-modal {
+    --gutter: 14px;
+    --modal-color: var(--dark);
+    --soft-color: var(--dar-lighter);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2000;
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding-top: 2%;
+}
+
+.simple-modal__content {
+    width: 95vw;
+    max-width: 800px;
+    max-height: 90vh;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    margin: 0 auto;
+    background-color: var(--dark);
+    display: flex;
+    flex-direction: column;
+}
+
+.simple-modal__content header {
+    min-height: 60px;
+    height: 60px;
+    color: white;
+    background-color: var(--dark);
+    display: grid;
+    align-items: center;
+    grid-template-columns: auto 60px;
+    border-bottom: solid 1px var(--dark-lighter);
+    margin-left: 15px;
+}
+
+.simple-modal__content header h4 {
+    margin: 0;
+    text-align: left;
+}
+
+.simple-modal__content header .close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    font-size: 45px;
+    color: white;
+    cursor: pointer;
+}
+
+.simple-modal__content header span:hover {
+    opacity: 1;
+}
+
+.simple-modal__content .modal-main {
+    flex: 1;
+    text-align: left;
+    overflow: auto;
+    padding: 15px;
+}
+
+.simple-modal__content footer {
+    height: auto;
+    text-align: right;
+    border-top: solid 1px #cccccc;
+    background-color: var(--dark);
+}
+
+.simple-modal__content footer button,
+.simple-modal__content footer input {
+    margin: 0;
+}
+
+/* ************************************************ */
+/* End of Modal */
+/* ************************************************ */
