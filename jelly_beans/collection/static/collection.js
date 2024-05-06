@@ -361,6 +361,11 @@ function jarHasEnoughRoom(createOrEdit) {
     let bean_capacity = jars_data[current_jar_index].bean_capacity
     let numBeans = getNumOfBeansInJar(jars_data[current_jar_index])
     bean_capacity -= numBeans
+    // If we are editing a bean, we want to add the original current bean size so we can know how much room is available
+    if(createOrEdit == 'edit') {
+        let currentBeanIndex = findBeanIndexById(current_bean_id)
+        bean_capacity += jars_data[current_jar_index].beans[currentBeanIndex].size
+    }
     let roomLeftString = `The current jar only has room for ${bean_capacity} more bean(s).`
     if (new_bean_size > bean_capacity) {
         return [false, roomLeftString]
